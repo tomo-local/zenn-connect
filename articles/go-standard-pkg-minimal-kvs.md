@@ -2,8 +2,8 @@
 title: "【Go】標準パッケージだけで永続化機能付きKVSを自作する"
 emoji: "🗄️"
 type: "tech"
-topics: ["go", "golang", "kvs", "標準パッケージ"]
-published: false
+topics: ["go", "kvs", "標準パッケージ"]
+published: true
 ---
 
 ## はじめに
