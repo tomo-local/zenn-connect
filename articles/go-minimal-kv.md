@@ -379,7 +379,7 @@ Goでシンプルなキーバリューデータベースを実装しました。
 
 ## GitHub
 
-- [tomo-local/kv_database](https://github.com/tomo-local/kv_database)
+https://github.com/tomo-local/kv_database
 
 ## 参考
 
