@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "zenn-cli": "^0.1.154"
+    "zenn-cli": "^0.4.6"
   },
   "scripts": {
     "dev": "zenn preview",
