@@ -3,7 +3,7 @@ title: "Goでシンプルなキーバリューデータベースを自作する"
 emoji: "🗄️"
 type: "tech"
 topics: ["go", "database", "kv", "cli"]
-published: true
+published: false
 ---
 
 ## はじめに
