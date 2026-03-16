@@ -112,29 +112,32 @@ export function subscribe(proxyObject: any, callback: Listener) {
 
 > 📎 本家Valtioの実装: [useSnapshot - src/react.ts](https://github.com/pmndrs/valtio/blob/383ccf185997cd6ec69ea136bcaccece9d6a7eb7/src/react.ts#L119)
 
-`useSyncExternalStore` の `getSnapshot` は、値が変わっていなければ**同一の参照**を返す必要があります。毎回新しいオブジェクトを返すと無限に再レンダリングが起きてしまうため、`WeakMap` で前回のスナップショットをキャッシュし、各プロパティを浅く比較して変化がなければキャッシュをそのまま返すようにしています。
+`useSyncExternalStore` の `getSnapshot` は、値が変わっていなければ**同一の参照**を返す必要があります。毎回新しいオブジェクトを返すと無限に再レンダリングが起きてしまうため、`useRef` で前回のスナップショットを保持し、各プロパティを浅く比較して変化がなければ前回の参照をそのまま返すようにしています。
 
 ```typescript
-import { useSyncExternalStore } from 'react';
-
-const snapshotCache = new WeakMap<object, object>();
+import { useCallback, useRef, useSyncExternalStore } from 'react';
 
 export function useSnapshot<T extends object>(proxyObject: T): T {
-  // 外部ストア（Proxy）の現在のスナップショットを取得し、変更時に同期する
-  return useSyncExternalStore(
-    (callback) => subscribe(proxyObject, callback),
+  const lastSnapshot = useRef<T>(undefined);
+
+  const currSnapshot = useSyncExternalStore(
+    useCallback(
+      (callback) => subscribe(proxyObject, callback),
+      [proxyObject],
+    ),
     () => {
-      // 前回のスナップショットをキャッシュから取得
-      const prev = snapshotCache.get(proxyObject) as T | undefined;
-      const next = { ...proxyObject };
+      const next = { ...proxyObject } as T;
+      const prev = lastSnapshot.current;
       if (prev) {
         const keys = Object.keys(next) as (keyof T)[];
         if (!keys.some((k) => next[k] !== prev[k])) return prev;
       }
-      snapshotCache.set(proxyObject, next);
       return next;
-    }
+    },
   );
+
+  lastSnapshot.current = currSnapshot;
+  return currSnapshot;
 }
 ```
 
