@@ -1,3 +1,11 @@
+---
+title: " Raspberry Pi + Ubuntu 24.04 で作る Kubernetes クラスター構築ガイド"
+emoji: "🪄"
+type: "tech"
+topics: ["k8s"]
+published: false
+---
+
 # Raspberry Pi + Ubuntu 24.04 で作る Kubernetes クラスター構築ガイド
 
 このドキュメントでは、複数の Raspberry Pi に Ubuntu 24.04 をインストールし、kubeadm を使用して Kubernetes (k8s) クラスターを構築する手順をまとめています。
