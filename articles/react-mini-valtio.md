@@ -57,6 +57,8 @@ Valtioの核となるのは、JavaScriptの `Proxy` APIです。
 
 まずは、オブジェクトを `Proxy` で包み、変更を検知する `proxy` 関数を作ります。
 
+> 📎 本家Valtioの実装: [proxy - src/vanilla.ts](https://github.com/pmndrs/valtio/blob/main/src/vanilla.ts)
+
 ```typescript
 type Listener = () => void;
 
@@ -92,6 +94,8 @@ export function proxy<T extends object>(initialObject: T): T {
 
 次に、作成したプロキシオブジェクトの変更を購読する関数を作ります。
 
+> 📎 本家Valtioの実装: [subscribe - src/vanilla.ts](https://github.com/pmndrs/valtio/blob/main/src/vanilla.ts)
+
 ```typescript
 export function subscribe(proxyObject: any, callback: Listener) {
   const listeners = proxyObject._listeners as Set<Listener>;
@@ -105,6 +109,8 @@ export function subscribe(proxyObject: any, callback: Listener) {
 ### Step 3: `useSnapshot` Hookの実装
 
 最後に、Reactコンポーネントからこの状態を使うためのHookを実装します。ここでは、React 18で導入された `useSyncExternalStore` を使います。
+
+> 📎 本家Valtioの実装: [useSnapshot - src/react.ts](https://github.com/pmndrs/valtio/blob/main/src/react.ts)
 
 `useSyncExternalStore` の `getSnapshot` は、値が変わっていなければ**同一の参照**を返す必要があります。毎回新しいオブジェクトを返すと無限に再レンダリングが起きてしまうため、`WeakMap` で前回のスナップショットをキャッシュし、各プロパティを浅く比較して変化がなければキャッシュをそのまま返すようにしています。
 
