@@ -1,0 +1,4 @@
+[tools]
+node = "22.21.1"
+"npm:pnpm" = "10"
+deno = "2.5.4"

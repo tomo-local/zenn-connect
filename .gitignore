@@ -1,2 +1,19 @@
-node_modules
+# Dependencies
+node_modules/
+
+# OS
 .DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# npm
+npm-debug.log*
+package-lock.json
+
+# Zenn
+.preview/
