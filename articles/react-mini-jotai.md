@@ -266,7 +266,7 @@ export default function App() {
 
 ## ValtioとJotaiの比較
 
-同じ記事シリーズで紹介した [Valtio](/react-mini-valtio) と比較してみましょう。
+同じ記事シリーズで紹介した [Valtio](/tomo_local/articles/react-mini-valtio) と比較してみましょう。
 
 | | Valtio | Jotai |
 |---|---|---|
