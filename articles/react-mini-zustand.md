@@ -3,7 +3,7 @@ title: "Reactの状態管理ライブラリ「Zustand」を自作して仕組み
 emoji: "🐻"
 type: "tech"
 topics: ["react", "zustand", "javascript", "typescript", "frontend", "state"]
-published: false
+published: true
 ---
 
 ## はじめに
