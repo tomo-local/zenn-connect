@@ -1,0 +1,15 @@
+[submodule "repos/react-mini-zustand"]
+	path = repos/react-mini-zustand
+	url = https://github.com/tomo-local/react-mini-zustand
+[submodule "repos/react-mini-valtio"]
+	path = repos/react-mini-valtio
+	url = https://github.com/tomo-local/react-mini-valtio
+[submodule "repos/react-mini-xstate"]
+	path = repos/react-mini-xstate
+	url = https://github.com/tomo-local/react-mini-xstate
+[submodule "repos/react-mini-jotai"]
+	path = repos/react-mini-jotai
+	url = https://github.com/tomo-local/react-mini-jotai
+[submodule "repos/kv_database"]
+	path = repos/kv_database
+	url = https://github.com/tomo-local/kv_database
