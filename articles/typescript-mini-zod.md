@@ -8,9 +8,9 @@ published: false
 
 ## はじめに
 
-Zodはランタイムでの値の検証と、TypeScriptの型推論を両立するバリデーションライブラリです。フォームの入力値やAPIレスポンスなど、「実行時に外から来る値」を安全に扱うために広く使われています。
+今回はZodのコアコンセプトを理解するために、簡易版をスクラッチで自作していきたいと思います。まず動かしてみて、少しずつ仕組みを理解していくスタイルで進めていきます。
 
-この記事ではZodのコアコンセプトを理解するために、その簡易版を自作してみます。
+ZodはTypeScriptと組み合わせて、プログラムが実際に動いているときの値の検証を行うライブラリです。フォームの入力値やAPIのレスポンスなど、外から来る値を安全に扱うために広く使われています。
 
 :::message
 **今回の簡易版の制約**
@@ -20,17 +20,17 @@ Zodはランタイムでの値の検証と、TypeScriptの型推論を両立す�
 - エラーメッセージのカスタマイズは実装しません
 :::
 
-## TypeScriptの型チェックとの比較
+## TypeScriptの型チェックとの違い
 
-TypeScriptの型はコンパイル時にしか機能せず、実行時にはすべて消えてしまいます。
+TypeScriptの型はコードを書くときにしか機能せず、実際にプログラムが動くときには消えてしまいます。
 
 ```typescript
-// TypeScript はこれをコンパイルエラーにしない
+// TypeScript はこれをエラーにしない
 const user: { name: string } = JSON.parse('{"name": 123}');
-user.name.toUpperCase(); // 実行時エラー: name.toUpperCase is not a function
+user.name.toUpperCase(); // 動かすと壊れる: name.toUpperCase is not a function
 ```
 
-APIレスポンスやフォーム入力のように、実行時に外から来る値は `unknown` として扱うのが正確で、その値に型を付けるには実行時の検証が必要です。Zodはその検証と型付けを同時に行います。
+APIのレスポンスやフォームの入力のように、動かしているときに外から来る値は、どんな値が入ってくるかわかりません。Zodはそういった値を実際に動かしながら検証して、TypeScriptの型としても使えるようにしてくれます。
 
 ```typescript
 const UserSchema = z.object({ name: z.string() });
@@ -41,18 +41,18 @@ const user = UserSchema.parse(JSON.parse('{"name": 123}'));
 
 ## Zodの仕組み（コンセプト）
 
-Zodのスキーマは次の2つのメソッドを持つオブジェクトです。
+実装に入る前に、Zodのスキーマがどんな構造をしているか簡単に整理しておきたいと思います。スキーマは次の2つのメソッドを持つオブジェクトです。
 
 | メソッド | 成功時 | 失敗時 |
 |---------|--------|--------|
 | `parse` | 検証済みの値を返す | `ZodError` を throw する |
 | `safeParse` | `{ success: true, data }` を返す | `{ success: false, error }` を返す（throw しない） |
 
-もうひとつ重要なのが `_type` フィールドです。これは **phantom type** と呼ばれるもので、実行時には値を持ちませんが、TypeScriptの型レベルでスキーマが表す型 `T` を保持します。`z.infer<T>` はここから型を取り出すだけのシンプルな型エイリアスです。
+もうひとつ重要なのが `_type` フィールドです。実際に動かすときには値を持ちませんが、TypeScriptがコードを書くときにスキーマの型 `T` を把握するために使われます。`z.infer<T>` はここから型を取り出すだけのシンプルな仕組みです。
 
 ```typescript
 type ZodType<T> = {
-  readonly _type: T; // phantom type（実行時には存在しない）
+  readonly _type: T; // 実行時には存在しない、型のための情報
   parse: (value: unknown) => T;
   safeParse: (value: unknown) => SafeParseResult<T>;
 };
@@ -65,7 +65,9 @@ type infer<T extends ZodType<unknown>> = T['_type'];
 
 ### Step 1: スキーマの骨格を作る（`core.ts`）
 
-まずスキーマの型定義と、スキーマオブジェクトを組み立てる `createSchema` 関数を実装します。
+まずスキーマの型定義と、スキーマオブジェクトを組み立てる `createSchema` 関数を実装していきたいと思います。
+
+では、コードを見ていきましょう！
 
 ```typescript
 export class ZodError extends Error {
@@ -101,18 +103,20 @@ export function createSchema<T>(parseFn: (value: unknown) => T): ZodType<T> {
 }
 ```
 
-`createSchema` のポイントは、**検証ロジックを `parseFn` として渡すだけで、`parse` と `safeParse` が自動的に出来上がる**点です。`safeParse` は `parseFn` を `try/catch` で包んでいるだけなので、個々のスキーマに書く必要がありません。
+`createSchema` のポイントは、検証ロジックを `parseFn` として渡すだけで `parse` と `safeParse` が自動的に出来上がる点です。`safeParse` は `parseFn` を `try/catch` で包んでいるだけなので、個々のスキーマに書く必要がありません！
 
 ### Step 2: プリミティブ型を実装する（`primitives.ts`）
 
-`createSchema` を使って `z.string()` / `z.number()` / `z.boolean()` を実装します。各スキーマの実装は `typeof` チェックと `ZodError` を throw するだけです。
+`createSchema` を使って `z.string()` / `z.number()` / `z.boolean()` を実装していきたいと思います。各スキーマの実装は `typeof` チェックと `ZodError` を throw するだけなのでシンプルです。
+
+では、コードを見ていきましょう！
 
 ```typescript
 import { createSchema, ZodError } from './core.js';
 
 export const z = {
-  // TypeScript の型チェックはコンパイル時にしか機能しないため、
-  // 実行時に unknown な値を検証するにはこのような typeof チェックが必要
+  // TypeScript の型チェックはコードを書くときにしか機能しないため、
+  // 実際に動かすときに値を検証するにはこのような typeof チェックが必要
   string: () =>
     createSchema<string>((value) => {
       if (typeof value !== 'string') {
@@ -139,9 +143,11 @@ export const z = {
 };
 ```
 
-クラスの継承ではなく、**検証ロジックを関数として渡す**だけで新しいスキーマを追加できます。
+クラスの継承ではなく、検証ロジックを関数として渡すだけで新しいスキーマを追加できます。拡張しやすい設計だと思います！
 
 ## 実際に使ってみる
+
+では実際に動かしてみましょう！
 
 ```typescript
 // parse: 成功
@@ -165,14 +171,14 @@ if (!result2.success) {
 }
 ```
 
-`safeParse` を使うと `try/catch` なしにエラーを扱えるため、フォームバリデーションのような「失敗が想定されるケース」に向いています。
+`safeParse` を使うと `try/catch` なしにエラーを扱えます。フォームのバリデーションのような「失敗が想定されるケース」に向いていると思います。
 
 ## まとめ
 
-- TypeScript の型はランタイムで消えるため、実行時の検証には `typeof` などのチェックが必要
+- TypeScriptの型はコードを書くときにしか機能しないため、実際に動かすときの検証には `typeof` などのチェックが必要
 - `createSchema(parseFn)` に検証ロジックを渡すだけでスキーマが作れる
 - `parse` は失敗時に throw、`safeParse` は `{ success, data/error }` を返す
-- `_type` フィールド（phantom type）で型情報をスキーマに埋め込む仕組みが `z.infer` の核心
+- `_type` フィールドでTypeScriptが型を把握できる仕組みが `z.infer` の核心
 
 ## GitHub
 
