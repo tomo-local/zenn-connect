@@ -32,6 +32,15 @@ gh repo create "$GITHUB_USER/$REPO_NAME" \
 echo "Adding as submodule..."
 git submodule add "https://github.com/$GITHUB_USER/$REPO_NAME" "repos/$REPO_NAME"
 
+# node_modules などが誤って commit されないよう .gitignore を追加
+cat > "repos/$REPO_NAME/.gitignore" <<'EOF'
+node_modules/
+dist/
+EOF
+git -C "repos/$REPO_NAME" add .gitignore
+git -C "repos/$REPO_NAME" commit -m "chore: add .gitignore"
+git -C "repos/$REPO_NAME" push
+
 git add .gitmodules "repos/$REPO_NAME"
 git commit -m "feat: add submodule $REPO_NAME"
 
