@@ -2,7 +2,7 @@
 title: "2026年 Reactの状態管理ライブラリを比較する"
 emoji: "🔍"
 type: "tech"
-topics: ["react", "javascript", "typescript", "frontend", "state"]
+topics: ["react", "jotai", "xstate", "zustand", "valtio"]
 published: true
 ---
 
