@@ -13,3 +13,6 @@
 [submodule "repos/kv_database"]
 	path = repos/kv_database
 	url = https://github.com/tomo-local/kv_database
+[submodule "repos/typescript-mini-zod"]
+	path = repos/typescript-mini-zod
+	url = https://github.com/tomo-local/typescript-mini-zod
