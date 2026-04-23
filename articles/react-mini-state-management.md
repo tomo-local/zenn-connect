@@ -23,7 +23,7 @@ https://zenn.dev/tomo_local/articles/react-mini-xstate
 
 https://zenn.dev/tomo_local/articles/react-mini-zustand
 
-## 4つのライブラリー、何が違うのか
+## 📊 4つのライブラリー、何が違うのか
 
 まず大きな視点で整理すると、4つのうち3つ（Valtio・Jotai・Zustand）は「**値をどう持ち、どう書き換えるか**」の話です。XStateだけが毛色が違って、「**いまどの状態にいるか**」を管理するアプローチを取っています。
 
@@ -36,7 +36,7 @@ https://zenn.dev/tomo_local/articles/react-mini-zustand
 
 内部実装でいうと、4つともObserverパターン（`Set` でリスナーを管理して変更を通知する）を核にしています。「どんなデータモデルで状態を表現するか」という設計の違いが、APIや適した用途の違いとして表れています。
 
-## 選ぶときに見るべき観点
+## 👀 選ぶときに見るべき観点
 
 APIの違いだけでなく、プロジェクトに採用するときに気になる観点も比較してみます。
 
@@ -55,9 +55,9 @@ https://stately.ai/viz
 
 ZustandとValtioはグローバルなモジュールとしてStoreを持つため、SSRではリクエストをまたいで状態が混ざらないよう工夫が必要です。JotaiはProviderで自然にスコープを分離できるので、Next.js (App Router) との相性がよいと思います。
 
-## どれを選ぶか
+## 🎯 どれを選ぶか
 
-### Zustand — まず迷ったらこれ
+### 🐻 Zustand — まず迷ったらこれ
 
 https://zustand.docs.pmnd.rs
 
@@ -85,7 +85,7 @@ const user = useAuthStore((state) => state.user);
 
 ---
 
-### Jotai — 細かく分割したい・SSRを使う
+### ⚛️ Jotai — 細かく分割したい・SSRを使う
 
 https://jotai.org
 
@@ -111,7 +111,7 @@ const [tab, setTab] = useAtom(activeTabAtom);
 
 ---
 
-### XState — 遷移ルールがある複雑なフロー
+### 🗺️ XState — 遷移ルールがある複雑なフロー
 
 https://xstate.js.org
 
@@ -145,7 +145,7 @@ send('FETCH'); // loading状態では無視される
 
 ---
 
-### Valtio — ミュータブルに書きたい
+### ✏️ Valtio — ミュータブルに書きたい
 
 https://valtio.dev
 
@@ -167,7 +167,7 @@ state.user.address.city = '東京';
 - SSRを使う場合は追加の工夫が必要
 - DevToolsによるデバッグを重視するとき
 
-## バンドルサイズの詳細
+## 📦 バンドルサイズの詳細
 
 バンドルサイズは[bundlephobia](https://bundlephobia.com)で確認できます。参考までに2026年4月時点の数値を載せておきます。
 
@@ -180,7 +180,7 @@ state.user.address.city = '東京';
 
 Zustandは圧倒的に軽量です。XStateはコア部分だけでもサイズが大きいため、バンドルサイズを気にするプロジェクトでは注意が必要だと思います。
 
-## 周辺ライブラリーの充実度
+## 🧩 周辺ライブラリーの充実度
 
 ### Zustand
 
@@ -216,7 +216,7 @@ Zustandは圧倒的に軽量です。XStateはコア部分だけでもサイズ�
 - `proxyMap` / `proxySet` — MapやSetをリアクティブに扱う
 - `valtio-yjs` — Yjs（リアルタイム共同編集ライブラリー）との同期
 
-## おわりに
+## 🙏 おわりに
 
 最後まで読んでいただきありがとうございました！
 この記事がReactの状態管理ライブラリーを選ぶときの参考になれば幸いです。🙇‍♂️
