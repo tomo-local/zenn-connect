@@ -3,7 +3,7 @@ title: "TypeScriptのバリデーションライブラリ「Zod」を自作し�
 emoji: "🔷"
 type: "tech"
 topics: ["typescript", "zod", "javascript", "frontend"]
-published: false
+published: true
 ---
 
 ## はじめに
