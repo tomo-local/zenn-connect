@@ -30,7 +30,7 @@ https://zenn.dev/tomo_local/articles/react-mini-zustand
 | | Valtio | Jotai | XState | Zustand |
 |---|---|---|---|---|
 | **状態の表現** | 値（何の値か） | 値（何の値か） | 状態名（どこにいるか） | 値（何の値か） |
-| **更新の書き方** | `state.count++` | `setCount(n => n + 1)` | `send('INCREMENT')` | `set({ count: n + 1 })` |
+| **更新の書き方** | `state.count++` | `setCount(n => n + 1)` | `send({ type: 'INCREMENT' })` | `set({ count: n + 1 })` |
 | **状態の保持** | Proxy（クロージャ） | WeakMap（Store） | クロージャ（Actor） | クロージャ（Store） |
 | **Reactとの同期** | `useSyncExternalStore` | `useReducer` + `useEffect` | `useSyncExternalStore` | `useSyncExternalStore` |
 
@@ -42,11 +42,11 @@ APIの違いだけでなく、プロジェクトに採用するときに気に�
 
 | | Valtio | Jotai | XState | Zustand |
 |---|---|---|---|---|
-| **バンドルサイズ** | 約2.6KB | 約2.7KB | 約22KB | 約1KB |
+| **バンドルサイズ** | 約2.6KB | 約2.7KB | 約22KB（`xstate`単体） | 約1KB |
 | **学習コスト** | 低 | 低〜中 | 高 | 低 |
-| **TypeScript相性** | ◎ | ◎ | ◎ | ○ |
+| **TypeScript相性** | ◎ | ◎ | ◎ | ○（middleware合成時に癖あり） |
 | **再レンダリング制御** | ○（プロパティ追跡） | ◎（atomごとに分離） | △ | ○（セレクタ） |
-| **DevTools** | △ | ○（専用あり） | ◎（Viz対応） | ◎（Redux DevTools） |
+| **DevTools** | ○（Redux DevTools） | ○（専用あり） | ◎（Viz対応） | ◎（Redux DevTools） |
 | **SSR / Next.js** | △（要工夫） | ◎（Provider分離） | ○ | △（要工夫） |
 
 XStateはバンドルサイズが他より大きいですが、状態遷移を図として可視化できる[XState Visualizer](https://stately.ai/viz)が強力です。複雑なフローをチームで共有する場面では特に重宝します。
@@ -89,7 +89,7 @@ const user = useAuthStore((state) => state.user);
 
 https://jotai.org
 
-状態を `atom` という最小単位に分割して管理します。コンポーネントは自分が使うatomだけを購読するため、**他の状態が変わっても再レンダリングが起きません**。
+状態を `atom` という最小単位に分割して管理します。コンポーネントは自分が使うatomだけを購読するため、**購読していないatomが変わっても不要な再レンダリングを減らしやすい**設計です。
 
 ```typescript
 const isModalOpenAtom = atom(false);
@@ -113,9 +113,9 @@ const [tab, setTab] = useAtom(activeTabAtom);
 
 ### 🗺️ XState — 遷移ルールがある複雑なフロー
 
-https://xstate.js.org
+https://stately.ai/docs/xstate
 
-他の3つとは根本的にアプローチが違います。「いまどの状態にいるか」を状態名として明示的に管理し、**定義されていないイベントは自動的に無視される**ので「ありえない状態遷移」が型レベルで排除されます。
+他の3つとは根本的にアプローチが違います。「いまどの状態にいるか」を状態名として明示的に管理し、**定義されていないイベントは自動的に無視される**ので「ありえない状態遷移」が型レベルで排除されます。state machineに加えて、**actorモデルによるオーケストレーション**（非同期処理・子アクター・タイマー・ワークフローの分岐合流）もカバーできる点が、他の3つとの実質的な差です。
 
 ```typescript
 const fetchMachine = createMachine({
@@ -129,19 +129,21 @@ const fetchMachine = createMachine({
 });
 
 // loading中にFETCHを送っても何も起きない（安全）
-send('FETCH'); // idle → loading
-send('FETCH'); // loading状態では無視される
+send({ type: 'FETCH' }); // idle → loading
+send({ type: 'FETCH' }); // loading状態では無視される
 ```
 
 **向いている場面**
 - 多段階フォーム・ウィザード
 - データフェッチの状態管理（idle / loading / success / error）
 - 認証フローなど「この状態ではこの操作はできない」を型で強制したいとき
+- 非同期処理の複雑なオーケストレーション
 - 状態遷移をチームで図として共有・レビューしたいとき
 
 **注意したい場面**
 - 単純なカウンターやフラグ管理には過剰になりがち
 - バンドルサイズを最小化したいとき
+- v4→v5で破壊的変更があったため、長期運用ではバージョンアップコストを見込んでおく
 
 ---
 
@@ -165,7 +167,7 @@ state.user.address.city = '東京';
 
 **注意したい場面**
 - SSRを使う場合は追加の工夫が必要
-- DevToolsによるデバッグを重視するとき
+- `valtio/utils` の `devtools` でRedux DevTools連携はできますが、ZustandやXStateと比べるとデバッグ体験は限定的
 
 ## 📦 バンドルサイズの詳細
 
@@ -178,7 +180,7 @@ state.user.address.city = '東京';
 | **Jotai** | 9.1KB | 2.7KB |
 | **XState** (`xstate` + `@xstate/react`) | 約170KB | 約55KB |
 
-Zustandは圧倒的に軽量です。XStateはコア部分だけでもサイズが大きいため、バンドルサイズを気にするプロジェクトでは注意が必要だと思います。
+Zustandは圧倒的に軽量です。XStateは `xstate` 単体でも `@xstate/react` と合わせると55KB（gzipped）になるため、バンドルサイズを気にするプロジェクトでは注意が必要だと思います。なお、上の比較表の「約22KB」は `xstate` 単体の数値です。
 
 ## 🧩 周辺ライブラリーの充実度
 
@@ -206,7 +208,7 @@ Zustandは圧倒的に軽量です。XStateはコア部分だけでもサイズ�
 
 - `@xstate/react` / `@xstate/vue` / `@xstate/svelte` — 各フレームワーク向けバインディング
 - [Stately Editor](https://stately.ai/editor) — ブラウザ上で状態遷移図を編集・生成できるGUIツール
-- `@xstate/test` — 状態機械からテストケースを自動生成
+- `@xstate/graph` — 状態機械からテストケースを自動生成（旧 `@xstate/test`）
 
 ### Valtio
 
