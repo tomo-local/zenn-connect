@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "zenn preview",
     "build": "zenn build",
-    "start": "zenn start"
+    "start": "zenn start",
+    "articles": "zenn new:article"
   }
 }
