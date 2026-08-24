@@ -3,7 +3,7 @@ title: "GoからRailsへ転職して気づいた：「明示性」と「規約�
 emoji: "🏊‍♂️"
 type: "tech"
 topics: ["go", "rails", "ruby", "architecture"]
-published: false
+published: true
 ---
 
 # 1. はじめに
